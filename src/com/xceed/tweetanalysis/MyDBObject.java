@@ -74,7 +74,7 @@ public class MyDBObject {
 	}
 	
 	public MyDBObject(String name, String text, long createdAt,
-			int retweetCount, int userMentionsCount, int hashtagsCount) {
+			long retweetCount, long userMentionsCount, long hashtagsCount) {
 		super();
 		this.name = name;
 		this.text = text;
@@ -83,7 +83,7 @@ public class MyDBObject {
 		this.userMentionsCount = userMentionsCount;
 		this.hashtagsCount = hashtagsCount;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

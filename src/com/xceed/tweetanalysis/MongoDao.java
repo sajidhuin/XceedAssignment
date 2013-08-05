@@ -76,22 +76,21 @@ public class MongoDao {
 		return myObjectList;
 	}
 	
-	private SortedMap<String, SortedSet<MyDBObject>> getRankedMap (List<MyDBObject> myObjectList, Method method) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
-		SortedMap<String, SortedSet<MyDBObject>> rankedMap = new ConcurrentSkipListMap<String, SortedSet<MyDBObject>>(
-				new Comparator<String>() {
+	private SortedMap<Long, SortedSet<MyDBObject>> getRankedMap (List<MyDBObject> myObjectList, Method method) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+		SortedMap<Long, SortedSet<MyDBObject>> rankedMap = new ConcurrentSkipListMap<Long, SortedSet<MyDBObject>>(
+				new Comparator<Long>() {
 					@Override
-					public int compare(String o1, String o2) {
+					public int compare(Long o1, Long o2) {
 						// TODO Auto-generated method stub
-						Long o1l = Long.parseLong(o1);
-						Long o2l = Long.parseLong(o2);
-						if (o2l < o1l) return -1;
-						else if (o2l == o1l) return 0;
+						if (o2 < o1) return -1;
+						else if (o2 == o1) return 0;
 						else return 1;
 					}
 				});
 		
 		for (MyDBObject myObject : myObjectList) {
-			SortedSet<MyDBObject> rankedSet = rankedMap.get(method.invoke(myObject) + "");
+			Long mapKey = (Long) method.invoke(myObject);
+			SortedSet<MyDBObject> rankedSet = rankedMap.get(mapKey);
 			if (rankedSet == null) {
 				rankedSet = new ConcurrentSkipListSet<MyDBObject>(new Comparator<MyDBObject>() {
 					@Override
@@ -102,7 +101,7 @@ public class MongoDao {
 						else return 1;
 					}
 				});
-				rankedMap.put((Long) method.invoke(myObject) + "", rankedSet);
+				rankedMap.put(mapKey, rankedSet);
 			}
 			rankedSet.add(myObject);
 		}
@@ -110,10 +109,10 @@ public class MongoDao {
 		return rankedMap;
 	}
 	
-	private List<MyDBObject> getTopObjects (SortedMap<String, SortedSet<MyDBObject>> rankedMap) {
+	private List<MyDBObject> getTopObjects (SortedMap<Long, SortedSet<MyDBObject>> rankedMap) {
 		List<MyDBObject> topObjectList = new ArrayList<MyDBObject>(MAX_TOP);
 		
-		Iterator<String> keyIterator = rankedMap.keySet().iterator();
+		Iterator<Long> keyIterator = rankedMap.keySet().iterator();
 		while (keyIterator.hasNext()) {
 			Iterator<MyDBObject> valIterator = rankedMap.get(keyIterator.next()).iterator();
 			while (valIterator.hasNext())
